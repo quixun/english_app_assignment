@@ -1,50 +1,37 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import styled from "styled-components";
-
-type SubItem = {
-  text: string;
-  url: string;
-};
+import { useAuth } from "../../../hook/useAuth";
 
 type ItemList = {
   icon: React.ReactElement;
   text: string;
   url: string;
-  submenu?: SubItem[];
 };
 
 const navItemsList: ItemList[] = [
-  { icon: <DashboardIcon />, text: "Dashboard", url: "/admin/" },
-  {
-    icon: <AssignmentIcon />,
-    text: "Courses",
-    url: "/admin/courses",
-    submenu: [
-      { text: "List Courses", url: "/admin/courses/all" },
-      { text: "Course Details", url: "/admin/courses/detail" },
-      { text: "Create Course", url: "/admin/courses/add" },
-    ],
-  },
+  { icon: <DashboardIcon />, text: "Dashboard", url: "/admin/dashboard" },
+  { icon: <AssignmentIcon />, text: "Courses", url: "/admin/courses/all" },
   { icon: <AccountCircleIcon />, text: "User", url: "/admin/user" },
 ];
 
 export const Sidebar = () => {
-  const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
-  const navigate = useNavigate(); 
-
-  const handleToggleSubmenu = (text: string) => {
-    setOpenSubmenu(openSubmenu === text ? null : text);
-  };
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { logout } = useAuth();
 
   const handleNavigation = (url: string) => {
     navigate(url);
+  };
+
+  const handleLogout = () => {
+    if (window.confirm("Are you sure you want to log out?")) {
+      logout();
+    }
   };
 
   return (
@@ -53,31 +40,16 @@ export const Sidebar = () => {
         <Logo src="/Icons/logo.png" alt="Logo" />
       </LogoWrapper>
       <NavList>
-        {navItemsList.map((item, index) => (
-          <React.Fragment key={index}>
-            <NavItem
-              hasSubmenu={!!item.submenu}
-              onClick={() =>
-                item.submenu ? handleToggleSubmenu(item.text) : handleNavigation(item.url)
-              }
-            >
-              <IconWrapper>{item.icon}</IconWrapper>
-              <TextWrapper>{item.text}</TextWrapper>
-              {item.submenu && (openSubmenu === item.text ? <ExpandLessIcon /> : <ExpandMoreIcon />)}
-            </NavItem>
-            {item.submenu && openSubmenu === item.text && (
-              <Submenu>
-                {item.submenu.map((subitem, subIndex) => (
-                  <SubmenuItem key={subIndex} onClick={() => handleNavigation(subitem.url)}>
-                    <span>{subitem.text}</span>
-                  </SubmenuItem>
-                ))}
-              </Submenu>
-            )}
-          </React.Fragment>
+        {navItemsList.map((item) => (
+          <NavItem key={item.url} $isActive={location.pathname === item.url}>
+            <IconWrapper>{item.icon}</IconWrapper>
+            <TextWrapper onClick={() => handleNavigation(item.url)}>
+              {item.text}
+            </TextWrapper>
+          </NavItem>
         ))}
       </NavList>
-      <Logout onClick={() => handleNavigation("/logout")}>
+      <Logout onClick={handleLogout}>
         <PowerSettingsNewIcon />
         <span>Logout</span>
       </Logout>
@@ -85,15 +57,19 @@ export const Sidebar = () => {
   );
 };
 
+export default Sidebar;
+
 const Wrapper = styled.div`
-  width: 240px; 
-  height: 100vh; 
+  width: 240px;
+  height: 100vh;
   background-color: #fff;
   padding: 20px 0;
-  position: fixed; 
+  position: fixed;
   display: flex;
   flex-direction: column;
   user-select: none;
+  transition: width 0.3s;
+  box-shadow: rgba(0, 0, 0, 0.15) 2.4px 2.4px 3.2px;
 `;
 
 const LogoWrapper = styled.div`
@@ -118,62 +94,46 @@ const NavList = styled.ul`
   flex-grow: 1;
 `;
 
-interface NavItemProps {
-  hasSubmenu: boolean;
-}
-
-const NavItem = styled.li<NavItemProps>`
+const NavItem = styled.li<{ $isActive: boolean }>`
   position: relative;
   padding: 15px 10px;
-  margin: 5px 0;
-  background-color: transparent;
+  margin: 5px 10px;
+  border-radius: 10px;
+  background-color: ${({ $isActive }) =>
+    $isActive ? "#4880ff" : "transparent"};
+  color: ${({ $isActive }) => ($isActive ? "#fff" : "#000")};
   cursor: pointer;
   transition: background-color 0.3s;
   display: flex;
   align-items: center;
-  justify-content: ${({ hasSubmenu }) =>
-    hasSubmenu ? "space-between" : "flex-start"};
+  justify-content: flex-start;
 
   &:hover {
     background-color: #4880ff;
+    color: white;
   }
 `;
 
 const IconWrapper = styled.div`
   display: flex;
   align-items: center;
+  margin-left: 10px;
 `;
 
 const TextWrapper = styled.span`
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-`;
-
-const Submenu = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  margin-left: 40px;
-`;
-
-const SubmenuItem = styled.li`
-  padding: 10px 10px;
-  background-color: transparent;
+  margin-left: 10px;
+  flex-grow: 1;
   cursor: pointer;
-  transition: background-color 0.3s;
-
-  &:hover {
-    background-color: #4880ff;
-  }
 `;
 
 const Logout = styled.div`
   position: fixed;
   bottom: 20px;
-  width: 220px;
+  width: 200px;
   display: flex;
   align-items: center;
+  border-radius: 10px;
+  margin: 0 10px;
   padding: 15px 10px;
   gap: 30px;
   transition: background-color 0.3s;
@@ -181,5 +141,6 @@ const Logout = styled.div`
 
   &:hover {
     background-color: #4880ff;
+    color: #fff;
   }
 `;

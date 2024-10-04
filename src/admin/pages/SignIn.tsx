@@ -1,97 +1,68 @@
 import styled from "styled-components";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
-import { EmptyLayout } from "../../layouts/EmptyLayout";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../hook/useAuth"; // Adjust the path as needed
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // Import navigate
 
 type SignInFormData = {
-  email: string;
+  user: string;
   password: string;
-  remember: boolean;
 };
 
 export const SignIn = () => {
-  const navigate = useNavigate();
-  const userName = "xuanphan742@gmail.com";
-  const password = "12345678";
+  const { login, isAuthenticated } = useAuth(); // Get isAuthenticated from context
   const {
     control,
     handleSubmit,
     formState: { errors },
   } = useForm<SignInFormData>();
+  const navigate = useNavigate(); // Initialize navigate
 
-  const onSubmit: SubmitHandler<SignInFormData> = (data) => {
-    if (data.email === userName && data.password === password) {
+  useEffect(() => {
+    // Redirect to dashboard if already authenticated
+    if (isAuthenticated) {
       navigate("/admin/dashboard");
     }
+  }, [isAuthenticated, navigate]); // Add isAuthenticated and navigate as dependencies
+
+  const onSubmit: SubmitHandler<SignInFormData> = (data) => {
+    login(data.user, data.password);
   };
 
   return (
-    <EmptyLayout>
-      <Container>
-        <HeadWrap>
-          <H1Custom>Login to Account</H1Custom>
-          <SpanCustom>
-            Please enter your email and password to continue
-          </SpanCustom>
-        </HeadWrap>
+    <Container>
+      <HeadWrap>
+        <H1Custom>Login to Account</H1Custom>
+      </HeadWrap>
 
-        <Label htmlFor="email">User name</Label>
-        <Controller
-          name="email"
-          control={control}
-          defaultValue=""
-          rules={{
-            required: "user name is required",
-            pattern: {
-              value: /^\S+@\S+$/i,
-              message: "Invalid user name format",
-            },
-          }}
-          render={({ field }) => <Input {...field} type="text" id="email" />}
-        />
-        {errors.email && <Error>{errors.email.message}</Error>}
+      <Label htmlFor="user">UserName</Label>
+      <Controller
+        name="user"
+        control={control}
+        defaultValue=""
+        rules={{ required: "User name is required" }}
+        render={({ field }) => <Input {...field} type="text" id="user" />}
+      />
+      {errors.user && <Error>{errors.user.message}</Error>}
 
-        <LabelContainer>
-          <Label htmlFor="password">Password</Label>
-        </LabelContainer>
+      <LabelContainer>
+        <Label htmlFor="password">Password</Label>
+      </LabelContainer>
 
-        <Controller
-          name="password"
-          control={control}
-          defaultValue=""
-          rules={{ required: "Password is required" }}
-          render={({ field }) => (
-            <Input {...field} type="password" id="password" />
-          )}
-        />
-        {errors.password && <Error>{errors.password.message}</Error>}
-
-        <CheckboxContainer>
-          <Controller
-            name="remember"
-            control={control}
-            defaultValue={false}
-            render={({ field }) => (
-              <>
-                <RememberPassInput
-                  type="checkbox"
-                  id="remember"
-                  checked={field.value}
-                  onChange={(e) => field.onChange(e.target.checked)}
-                />
-                <RememberPassLabel htmlFor="remember">
-                  Remember Password
-                </RememberPassLabel>
-              </>
-            )}
-          />
-        </CheckboxContainer>
-        <Button onClick={handleSubmit(onSubmit)}>Sign in</Button>
-        <AccountMessage>
-          Don’t have an account? <span>Create Account</span>
-        </AccountMessage>
-      </Container>
-    </EmptyLayout>
+      <Controller
+        name="password"
+        control={control}
+        defaultValue=""
+        rules={{ required: "Password is required" }}
+        render={({ field }) => (
+          <Input {...field} type="password" id="password" />
+        )}
+      />
+      {errors.password && <Error>{errors.password.message}</Error>}
+      <Button type="button" onClick={handleSubmit(onSubmit)}>
+        Sign in
+      </Button>
+    </Container>
   );
 };
 
@@ -119,24 +90,11 @@ const H1Custom = styled.h1`
   font-size: x-large;
   font-family: Nunito Sans;
 `;
-
-const SpanCustom = styled.span`
-  margin-bottom: 20px;
-`;
-
 const LabelContainer = styled.div`
   display: flex;
   justify-content: space-between;
   width: 100%;
   margin-top: 20px;
-`;
-
-const RememberPassLabel = styled.label`
-  margin-left: 5px;
-`;
-
-const RememberPassInput = styled.input`
-  margin: 0;
 `;
 
 const Label = styled.label`
@@ -160,14 +118,8 @@ const Input = styled.input`
   }
 `;
 
-const CheckboxContainer = styled.div`
-  display: flex;
-  align-items: center;
-  margin: 10px 0 20px 0;
-`;
-
 const Button = styled.button`
-  margin-top: 20px;
+  margin-top: 50px;
   margin-bottom: 20px;
   border-radius: 8px;
   border: none;
@@ -188,16 +140,4 @@ const Error = styled.span`
   color: red;
   font-size: 12px;
   margin-top: 5px;
-`;
-
-const AccountMessage = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-  gap: 5px;
-
-  span {
-    text-decoration: underline;
-    color: #4880ff;
-  }
 `;

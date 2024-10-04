@@ -3,12 +3,26 @@ import MenuIcon from "@mui/icons-material/Menu";
 import FormControl from "@mui/material/FormControl";
 import NativeSelect from "@mui/material/NativeSelect";
 import SearchIcon from "@mui/icons-material/Search";
+import IconButton from "@mui/material/IconButton";
 
 export const Header = () => {
   return (
     <Wrapper>
       <LeftSection>
-        <MenuIcon />
+        <IconButton
+          size="large"
+          edge="start"
+          color="inherit"
+          aria-label="menu"
+          sx={{
+            mr: 2,
+            "&:focus": {
+              outline: "none",
+            },
+          }}
+        >
+          <MenuIcon />
+        </IconButton>
         <InputContainer>
           <input type="text" placeholder="Search..." />
           <SearchIcon />
@@ -45,18 +59,18 @@ export const Header = () => {
 };
 
 const Wrapper = styled.header`
-  height: 70px; 
+  height: 70px;
   background-color: #fff;
   color: black;
   display: flex;
   justify-content: space-between;
-  align-items: center;
   padding: 0 20px;
-  width: calc(100% - 280px); 
-  position: fixed; 
-  top: 0; 
-  left: 240px; 
-  z-index: 1000; 
+  width: calc(100% - 280px);
+  position: fixed;
+  top: 0;
+  z-index: 1000;
+  transition: width 0.3s ease-in-out;
+  box-shadow: rgba(0, 0, 0, 0.15) 2.4px 2.4px 3.2px;
 `;
 
 const LeftSection = styled.div`

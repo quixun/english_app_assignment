@@ -1,8 +1,12 @@
 import styled from "styled-components";
-import { ChildrenProps } from "../types/common/ChildrenType";
+import { Outlet } from "react-router-dom";
 
-export const EmptyLayout = ({ children }: ChildrenProps) => {
-  return <AuthContainer>{children}</AuthContainer>;
+export const EmptyLayout = () => {
+  return (
+    <AuthContainer>
+      <Outlet />
+    </AuthContainer>
+  );
 };
 
 const AuthContainer = styled.div`

@@ -1,31 +1,37 @@
-import { StrictMode } from "react";
+import { StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
-import { App } from "./App.tsx";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { routes } from "./routes/index";
 import "./index.css";
-import { publicRoutes } from "./routes/index.ts";
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { MainLayout } from "./layouts/MainLayout.tsx";
+import { AuthProvider } from "./context/AuthContext";
 
-createRoot(document.getElementById("root")!).render(
+const root = createRoot(document.getElementById("root")!);
+
+root.render(
   <StrictMode>
-    <Router>
-        <Routes>
-          {publicRoutes.map((route, index) => {
-            const Page = route.component
-            return (
-              <Route
-                key={index}
-                path={route.path}
-                element={
-                  <MainLayout>
-                    <Page />
-                    </MainLayout>
-                }
-              />
-            )
-          })}
-        </Routes>
-      </Router>
-    <App />
+    <BrowserRouter>
+      <AuthProvider>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Routes>
+            {routes.map((route, index) => {
+              const Layout = route.element;
+
+              return (
+                <Route key={index} path={route.path} element={Layout}>
+                  {route.children &&
+                    route.children.map((child, childIndex) => (
+                      <Route
+                        key={childIndex}
+                        path={child.path}
+                        element={child.element}
+                      />
+                    ))}
+                </Route>
+              );
+            })}
+          </Routes>
+        </Suspense>
+      </AuthProvider>
+    </BrowserRouter>
   </StrictMode>
 );
